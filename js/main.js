@@ -69,6 +69,17 @@ var budgetController =(function(){
                 percentage:data.percentage,
             }
         },
+        deleteFromData(type,id){
+            var ids , index;
+            ids = data.allItems[type].map(el => {
+                return el.id;
+            });
+            index =ids.indexOf(id);
+            
+            if(index !== -1){
+                data.allItems[type].splice(index,1);
+            }
+        },
         testing:function(){
             console.log(data);
         }
@@ -87,6 +98,7 @@ var uiController=(function(){
         incomeLabel:'#income',
         expensesLabel:'#expenses',
         percentageLabel:'#percentage',
+        container:'.all-data'
     }
     return {
         getInput:function(){
@@ -132,6 +144,10 @@ var uiController=(function(){
                 document.querySelector(DomStrings.percentageLabel).textContent='--'
             }
         },
+        deleteItemFromUi(selectedId){
+            element =document.getElementById(selectedId);
+            element.parentNode.removeChild(element);
+        },
         getDom:function(){
             return DomStrings;
         }
@@ -145,8 +161,9 @@ var mainController =(function(budgCtrl , uiCtrl){
         document.addEventListener('keypress',function(ev){
             if(ev.keyCode === 13 || ev.which ===13){
                 addItem();
-            }
+            } 
         });
+        document.querySelector(Dom.container).addEventListener('click',deleteItem)
     }
     var updateBudget=function(){
         //1.Calculate the Budget.
@@ -173,7 +190,21 @@ var mainController =(function(budgCtrl , uiCtrl){
         }
     
     };
-
+    var deleteItem=function(e){
+        var itemID = e.target.parentNode.parentNode.parentNode.id;
+        if(itemID){
+            var ids , ID , Type;
+            ids= itemID.split('-');
+            TYPE = ids[0];
+            ID = Number(ids[1]);
+        }
+        // DElete from data
+        budgCtrl.deleteFromData(TYPE,ID)
+        // DELETE FROM UI
+        uiCtrl.deleteItemFromUi(itemID);
+        // UPDATE BUDGET
+        updateBudget();
+    }
     return {
         init:function(){
             setupEventListener();
